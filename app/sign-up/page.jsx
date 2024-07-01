@@ -1,8 +1,6 @@
 // SignUp.jsx
-'use client'
+'use client';
 import React, { useState } from 'react';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
-import { auth } from '@/app/firebase/config'
 
 const SignUp = () => {
     const [email, setEmail] = useState('');
@@ -12,20 +10,33 @@ const SignUp = () => {
 
     const handleSignUp = async (e) => {
         e.preventDefault();
-
-
+        setLoading(true);
+        setError(null);
 
         try {
-            const user = await signInWithEmailAndPassword(auth, email, password);
-            setEmail('');
-            setPassword('');
-            setLoading(false);
-            console.log(user);
-            alert('User signed in successfully');
-        } catch (err) {
-            alert("An unknown error occured");
-            ; console.log(err);
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password })
+            });
 
+            const data = await res.json();
+
+            if (res.ok) {
+                alert('Sign-up successful!');
+                setEmail('');
+                setPassword('');
+            } else {
+                setError(res.error.toString());
+                alert(`Error logging in: ${res.error.toString()} `);
+            }
+        } catch (err) {
+            setError('An unexpected error occurred.');
+            console.error(err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -33,9 +44,7 @@ const SignUp = () => {
         <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
             <div className="max-w-md w-full space-y-8 p-10 bg-gray-800 rounded-xl shadow-md">
                 <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-100">
-                        Sign Up
-                    </h2>
+                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-100">Sign Up</h2>
                 </div>
                 <form className="mt-8 space-y-6" onSubmit={handleSignUp}>
                     <div className="rounded-md shadow-sm -space-y-px">
